@@ -20,8 +20,7 @@
 - [6. System Flow & Sequence Diagram](#6-system-flow--sequence-diagram)
 - [7. API Reference](#7-api-reference)
 - [8. Local Development & Verification](#8-local-development--verification)
-- [9. AWS Cloud Deployment Guide (EC2)](#9-aws-cloud-deployment-guide-ec2)
-- [10. Project Structure](#10-project-structure)
+- [9. Project Structure](#9-project-structure)
 
 ---
 
@@ -260,74 +259,7 @@ pnpm --filter backend test:demo
 
 ---
 
-## 9. AWS Cloud Deployment Guide (EC2)
-
-### Step 1: Provision AWS EC2 Instance
-
-1. Launch an **AWS EC2 `t3.micro` or `t3.small`** instance using **Ubuntu 24.04 LTS**.
-2. Configure **Security Group** Inbound Rules:
-   - **Port 22 (SSH)**: `0.0.0.0/0` (or your management IP).
-   - **Port 80 (HTTP)**: `0.0.0.0/0`.
-   - **Port 443 (HTTPS)**: `0.0.0.0/0`.
-3. Allocate an **Elastic IP** in AWS VPC and associate it with the EC2 instance.
-
-### Step 2: Server Initialization (SSH)
-
-Connect to your EC2 instance:
-
-```bash
-ssh -i /path/to/key.pem ubuntu@<YOUR_ELASTIC_IP>
-```
-
-Install Docker & Docker Compose:
-
-```bash
-sudo apt update && sudo apt upgrade -y
-sudo apt install -y docker.io docker-compose-v2 git
-sudo systemctl enable --now docker
-sudo usermod -aG docker ubuntu
-```
-
-_(Log out and log back in to activate group permissions)_
-
-### Step 3: Deploy via Production Docker Compose
-
-```bash
-# Clone the repository
-git clone https://github.com/your-org/agent-waf.git
-cd agent-waf
-
-# Create production .env
-cat << 'EOF' > .env
-NODE_ENV=production
-PORT=4000
-DATABASE_URL=postgresql://postgres:postgres@postgres:5432/agent_waf?schema=public
-REDIS_URL=redis://redis:6379
-GEMINI_API_KEY=AIzaSy...YOUR_KEY...
-GEMINI_MODEL=gemini-2.5-flash
-BETTER_AUTH_SECRET=super_secure_random_production_secret_key_32chars
-BETTER_AUTH_URL=http://<YOUR_ELASTIC_IP>
-CORS_ORIGIN=http://<YOUR_ELASTIC_IP>
-EOF
-
-# Build and start all 4 production containers in detached mode
-docker compose -f docker-compose.prod.yml up -d --build
-
-# Run Prisma schema migrations
-docker compose -f docker-compose.prod.yml exec backend pnpm prisma migrate deploy
-```
-
-### Step 4: Verification
-
-Navigate to `http://<YOUR_ELASTIC_IP>` in any browser:
-
-- The frontend is served on Port 80 by Nginx.
-- Nginx proxies `/api/*` and `/socket.io/*` internally to the backend.
-- All real-time telemetry, agent runs, and firewall rules operate fully isolated in production.
-
----
-
-## 10. Project Structure
+## 9. Project Structure
 
 ```
 c:\aivar\
