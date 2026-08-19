@@ -12,14 +12,15 @@
 ## Table of Contents
 
 - [1. Problem Statement & Architecture](#1-problem-statement--architecture)
-- [2. Core Features & Capabilities](#2-core-features--capabilities)
-- [3. Rule Engine & Policy Specifications](#3-rule-engine--policy-specifications)
-- [4. Real-Time Dashboard & Telemetry](#4-real-time-dashboard--telemetry)
-- [5. Production Readiness & Enterprise Security](#5-production-readiness--enterprise-security)
-- [6. System Flow & Sequence Diagram](#6-system-flow--sequence-diagram)
-- [7. API Reference](#7-api-reference)
-- [8. Local Development & Verification](#8-local-development--verification)
-- [9. Project Structure](#9-project-structure)
+- [2. High-Level Design (HLD)](#2-high-level-design-hld)
+- [3. Core Features & Capabilities](#3-core-features--capabilities)
+- [4. Rule Engine & Policy Specifications](#4-rule-engine--policy-specifications)
+- [5. Real-Time Dashboard & Telemetry](#5-real-time-dashboard--telemetry)
+- [6. Production Readiness & Enterprise Security](#6-production-readiness--enterprise-security)
+- [7. System Flow & Sequence Diagram](#7-system-flow--sequence-diagram)
+- [8. API Reference](#8-api-reference)
+- [9. Local Development & Verification](#9-local-development--verification)
+- [10. Project Structure](#10-project-structure)
 
 ---
 
@@ -62,7 +63,39 @@ Without an enforcement layer:
 
 ---
 
-## 2. Core Features & Capabilities
+## 2. High-Level Design (HLD)
+
+Agent WAF operates as a fast, transparent gateway between the LLM and its execution tools.
+When an Agent attempts to call a tool, the invocation is POSTed to the WAF. The WAF routes the payload through a pipeline of evaluators (Rate Limit, Parameter Blocklist, Data Scope, Sequence). 
+State is maintained atomically in Redis (for rate limit windows and session sequences) while persistent audit logs are written to PostgreSQL asynchronously.
+
+```mermaid
+graph TD
+    Agent[LLM Agent] -->|POST /api/v1/tool-call| API[Express API Gateway]
+    
+    subgraph WAF Pipeline
+        API --> Engine[Rule Engine]
+        Engine --> R1(Rate Limiter)
+        Engine --> R2(Schema Validation)
+        Engine --> R3(Data Scope Enforcer)
+        Engine --> R4(Sequence Rules)
+    end
+    
+    R1 <--> Redis[(Redis Cache)]
+    R4 <--> Redis
+    
+    Engine -->|If Blocked| Reject[403 Forbidden]
+    Engine -->|If Allowed| Target[Mock Tools / External API]
+    
+    Target --> Logger[Async Audit Logger]
+    Logger --> PG[(PostgreSQL)]
+    Logger --> WS[Socket.IO Stream]
+    WS --> UI[Live Dashboard]
+```
+
+---
+
+## 3. Core Features & Capabilities
 
 - **Transparent Proxy Gateway**: Intercepts `POST /api/v1/tool-call` with agent bcrypt authentication, Zod schema validation, and front-door Redis rate limiting.
 - **5 Multi-Layer Policy Evaluators**:
@@ -84,7 +117,7 @@ Without an enforcement layer:
 
 ---
 
-## 3. Rule Engine & Policy Specifications
+## 4. Rule Engine & Policy Specifications
 
 | Rule Type          | Config Schema                                           | Failure Code           | Behavior                                                                                       |
 | :----------------- | :------------------------------------------------------ | :--------------------- | :--------------------------------------------------------------------------------------------- |
@@ -96,7 +129,7 @@ Without an enforcement layer:
 
 ---
 
-## 4. Real-Time Dashboard & Telemetry
+## 5. Real-Time Dashboard & Telemetry
 
 The frontend application (`apps/frontend`) is built with React 19, Tailwind CSS, Lucide icons, and Recharts:
 
@@ -106,7 +139,7 @@ The frontend application (`apps/frontend`) is built with React 19, Tailwind CSS,
 
 ---
 
-## 5. Production Readiness & Enterprise Security
+## 6. Production Readiness & Enterprise Security
 
 - **Real LLM Integration**: Uses official `@google/genai` SDK with autonomous multi-turn tool calling and error feedback loops.
 - **High Concurrency & Atomic State**: Uses Redis for sequence sets, rate-limiting windows, and pub/sub events to ensure stateless scaling across multiple backend instances.
@@ -116,7 +149,7 @@ The frontend application (`apps/frontend`) is built with React 19, Tailwind CSS,
 
 ---
 
-## 6. System Flow & Sequence Diagram
+## 7. System Flow & Sequence Diagram
 
 ```mermaid
 sequenceDiagram
@@ -159,7 +192,7 @@ sequenceDiagram
 
 ---
 
-## 7. API Reference
+## 8. API Reference
 
 ### Gateway Tool Invocation
 
@@ -209,7 +242,7 @@ sequenceDiagram
 
 ---
 
-## 8. Local Development & Verification
+## 9. Local Development & Verification
 
 ### Option A: Standard Node.js (Development Mode)
 
@@ -258,7 +291,7 @@ pnpm --filter backend test:demo
 
 ---
 
-## 9. Project Structure
+## 10. Project Structure
 
 ```
 c:\aivar\
