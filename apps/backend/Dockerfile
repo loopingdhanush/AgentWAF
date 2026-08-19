@@ -19,7 +19,7 @@ COPY apps/backend ./apps/backend
 
 # Generate Prisma Client
 WORKDIR /app/apps/backend
-RUN pnpm prisma generate
+RUN DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy" pnpm prisma generate
 
 # Stage 2: Runner
 FROM node:22-alpine AS runner
