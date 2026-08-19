@@ -194,51 +194,69 @@ sequenceDiagram
 
 ## 8. API Reference
 
-### Gateway Tool Invocation
+### 1. Gateway Tool Invocation
 
-`POST /api/v1/tool-call`
+The core proxy endpoint where AI agents send their tool execution requests.
 
-- **Headers**: `x-agent-key: <RAW_AGENT_KEY>`, `x-session-id: <SESSION_UUID>`
-- **Body**:
-  ```json
-  {
-    "tool": "get_customer_record",
-    "parameters": {
-      "customerId": "CUST-1001"
+- **`POST /api/v1/tool-call`**
+  - **Headers**: `x-agent-key: <RAW_AGENT_KEY>`, `x-session-id: <SESSION_UUID>`
+  - **Body Example**:
+    ```json
+    {
+      "tool": "get_customer_record",
+      "parameters": { "customerId": "CUST-1001" }
     }
-  }
-  ```
-- **Response (200 OK)**:
-  ```json
-  {
-    "disposition": "ALLOWED",
-    "result": { "id": "CUST-1001", "name": "Jane Doe", "tier": "ENTERPRISE" },
-    "latencyMs": 14,
-    "evaluatedRules": [
-      { "ruleId": "r-01", "ruleName": "Rate Limit", "passed": true },
-      { "ruleId": "r-04", "ruleName": "Customer Scope", "passed": true }
-    ]
-  }
-  ```
-- **Response (403 Blocked)**:
-  ```json
-  {
-    "disposition": "BLOCKED",
-    "blockedByRule": {
-      "id": "r-05",
-      "name": "Enforce Read Before Write",
-      "type": "SEQUENCE"
-    },
-    "reason": "Tool 'update_customer_record' requires prior execution of 'get_customer_record' in this session.",
-    "latencyMs": 8
-  }
-  ```
+    ```
+  - **Response (200 OK - ALLOWED)**:
+    ```json
+    {
+      "disposition": "ALLOWED",
+      "result": { "id": "CUST-1001", "name": "Jane Doe", "tier": "ENTERPRISE" },
+      "latencyMs": 14,
+      "evaluatedRules": [
+        { "ruleId": "r-01", "ruleName": "Rate Limit", "passed": true }
+      ]
+    }
+    ```
+  - **Response (403 Forbidden - BLOCKED)**:
+    ```json
+    {
+      "disposition": "BLOCKED",
+      "blockedByRule": { "id": "r-05", "name": "Enforce Read Before Write", "type": "SEQUENCE" },
+      "reason": "Tool 'update_customer_record' requires prior execution of 'get_customer_record' in this session.",
+      "latencyMs": 8
+    }
+    ```
 
-### Operational Endpoints
+### 2. Autonomous Agent Runner
 
-- `GET /healthz`: Health status of Postgres and Redis (`200 OK` / `503 Service Unavailable`).
-- `GET /api/version`: Service version and Git commit metadata.
-- `POST /api/v1/agent-run`: Executes an autonomous Gemini agent run against a specified goal.
+- **`POST /api/v1/agent-run`**: Triggers a live, server-side Gemini agent to execute a goal autonomously (used by the Sandbox UI).
+
+### 3. Admin & Configuration API
+
+_Note: All `/api/admin/*` routes require an active Better-Auth session cookie._
+
+**Agents Management**
+- **`GET /api/admin/agents`**: List all registered agents and their API keys.
+- **`POST /api/admin/agents`**: Register a new agent (generates a new `x-agent-key`).
+- **`PATCH /api/admin/agents/:id`**: Update an agent's metadata or data scope.
+- **`DELETE /api/admin/agents/:id`**: Revoke and delete an agent.
+
+**Firewall Rules Management**
+- **`GET /api/admin/rules`**: List all active WAF policies and sequence chains.
+- **`POST /api/admin/rules`**: Create a new policy evaluator (Rate Limit, Scope, Blocklist, etc).
+- **`PATCH /api/admin/rules/:id`**: Update a rule's configuration or toggle it into `SHADOW` mode.
+- **`DELETE /api/admin/rules/:id`**: Remove a policy rule.
+
+**Telemetry & Logging**
+- **`GET /api/admin/logs`**: Paginated retrieval of the `ToolCallLog` audit trail.
+- **`GET /api/admin/stats/summary`**: High-level KPI metrics (Total calls, Block rate) for the Dashboard.
+- **`GET /api/admin/diagnostics`**: Deep diagnostic data on rule execution times and system health.
+
+### 4. System Endpoints
+
+- **`POST /api/auth/*`**: Standard [Better-Auth](https://better-auth.com) endpoints (e.g., `/sign-in`, `/sign-out`, `/session`).
+- **`GET /healthz`**: Deep health check for PostgreSQL and Redis (`200 OK` or `503 Service Unavailable`).
 
 ---
 
