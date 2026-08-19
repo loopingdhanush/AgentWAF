@@ -266,19 +266,33 @@ _Note: All `/api/admin/*` routes require an active Better-Auth session cookie._
 
 **Prerequisites:** Node.js 22+, `pnpm` enabled, Docker Desktop (for Postgres/Redis).
 
-1. Start Infrastructure:
-   ```bash
-   docker compose -f docker-compose.dev.yml up -d postgres redis
-   ```
-2. Create `apps/backend/.env` (see `.env.example`).
-3. Run Migrations & Start Servers:
+1. **Install Dependencies:**
    ```bash
    pnpm install
-   pnpm --filter backend prisma migrate deploy
-   pnpm --filter backend db:seed
-   pnpm dev
    ```
-4. Open `http://localhost:3000` and click **Quick Login (Demo Admin)**.
+
+2. **Run the Setup Script:**
+   This script will automatically start the databases via Docker, wait for initialization, run migrations, and seed the demo data.
+   ```bash
+   pnpm run setup:dev
+   ```
+   *(If prompted, add your **Gemini API Key** to `apps/backend/.env` and re-run)*
+
+3. **Start Development Servers:**
+   Run the backend and frontend in two separate terminals:
+   
+   **Terminal 1:**
+   ```bash
+   pnpm dev:backend
+   ```
+   
+   **Terminal 2:**
+   ```bash
+   pnpm dev:frontend
+   ```
+
+4. **Access the Application:**
+   Open `http://localhost:3000` and click **Quick Login (Demo Admin)**.
 
 ### Option B: Full Local Docker Deployment (Production Build)
 

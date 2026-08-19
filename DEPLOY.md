@@ -31,35 +31,33 @@ Make sure you have these installed on your computer:
 - **Docker Desktop** (must be installed and running in the background)
 - **pnpm** (Once Node.js is installed, run `corepack enable && corepack prepare pnpm@latest --activate` in your terminal to install pnpm)
 
-### 1. Start Infrastructure (PostgreSQL & Redis)
-Instead of installing databases directly on your machine, run them via Docker:
-```bash
-docker compose -f docker-compose.dev.yml up -d postgres redis
-```
+### 1. Automated Setup Script
+Instead of running databases and migrations manually, you can use our built-in setup script.
 
-### 2. Configure Environment Variables
-Create the backend `.env` file from the example template:
-```bash
-cp apps/backend/.env.example apps/backend/.env
-```
-Open `apps/backend/.env` in your editor and add your **Gemini API Key**:
-```env
-GEMINI_API_KEY=your_real_key_from_google_ai_studio
-```
-
-### 3. Install Dependencies & Seed Database
-Install all monorepo packages, run database migrations, and seed demo data:
+First, install `pnpm` dependencies:
 ```bash
 pnpm install
-pnpm --filter backend prisma migrate deploy
-pnpm --filter backend db:seed
 ```
 
-### 4. Start Development Servers
-Start both the React frontend and Node.js backend simultaneously:
+Then, run the automated setup script. This script will automatically start PostgreSQL and Redis via Docker, wait for them to initialize, run database migrations, and seed the demo data:
 ```bash
-pnpm dev
+pnpm run setup:dev
 ```
+*(If prompted, add your **Gemini API Key** to `apps/backend/.env` and re-run the setup script)*
+
+### 2. Start Development Servers
+Once setup is complete, start both the React frontend and Node.js backend simultaneously in two different terminal windows:
+
+**Terminal 1 (Backend):**
+```bash
+pnpm dev:backend
+```
+
+**Terminal 2 (Frontend):**
+```bash
+pnpm dev:frontend
+```
+
 - Open **http://localhost:3000** in your browser.
 - Click **Quick Login (Demo Admin)** to access the dashboard.
 

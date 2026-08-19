@@ -6,6 +6,7 @@
   "scripts": {
     "dev:backend": "pnpm --filter backend dev",
     "dev:frontend": "pnpm --filter frontend dev",
+    "setup:dev": "tsx scripts/setup-dev.ts",
     "build": "pnpm --recursive build",
     "test": "pnpm --recursive test",
     "db:up": "docker compose -f docker-compose.dev.yml up -d",
@@ -15,7 +16,9 @@
     "seed": "pnpm --filter backend seed"
   },
   "devDependencies": {
+    "@types/node": "^22.20.1",
     "prettier": "^3.5.3",
+    "tsx": "^4.23.12",
     "typescript": "^5.8.2"
   },
   "onlyBuiltDependencies": [
