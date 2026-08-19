@@ -1,91 +1,89 @@
-# Agent WAF — AWS EC2 Deployment Guide
+# Agent WAF — Local Deployment Guide
 
-This guide details the complete process for deploying the Agent WAF monorepo to an AWS EC2 `t3.micro` instance running Ubuntu 24.04 LTS.
+This guide provides step-by-step instructions for running the Agent WAF monorepo on your local machine.
 
-## 1. AWS EC2 Provisioning
+You have two options for local deployment:
+1. **Standard Node.js (Development Mode)**: Best for active development. Runs the backend and frontend using standard Vite/Node processes, while relying on Docker just for the database and cache.
+2. **Full Docker Deployment (Production Mode)**: Best for testing the exact production infrastructure. Runs the entire stack (including the frontend Nginx proxy and Node backend) inside Docker.
 
-1. **Launch Instance**: Launch a `t3.micro` instance using the latest Ubuntu 24.04 LTS AMI.
-2. **Key Pair**: Create or attach an existing RSA key pair (`.pem`) for SSH access.
-3. **Security Group**:
-   - **Inbound Rule 1**: SSH (Port 22) - `0.0.0.0/0` (or your IP).
-   - **Inbound Rule 2**: HTTP (Port 80) - `0.0.0.0/0`.
-4. **Elastic IP**: Allocate an Elastic IP and associate it with your new instance so the public IP remains static.
+---
 
-## 2. Server Initialization (SSH)
+## Option 1: Standard Node.js (Development Mode)
 
-SSH into your instance using your key pair:
+### Prerequisites
+- Node.js 22+
+- `pnpm` (run `corepack enable && corepack prepare pnpm@latest --activate`)
+- Docker Desktop (must be running)
 
+### 1. Start Infrastructure (PostgreSQL & Redis)
+Instead of installing databases directly on your machine, run them via Docker:
 ```bash
-ssh -i /path/to/key.pem ubuntu@<ELASTIC_IP>
+docker compose -f docker-compose.dev.yml up -d postgres redis
 ```
 
-Update packages and install Docker:
-
+### 2. Configure Environment Variables
+Create the backend `.env` file from the example template:
 ```bash
-sudo apt update && sudo apt upgrade -y
-sudo apt install -y docker.io docker-compose-v2 git
-sudo systemctl enable --now docker
-sudo usermod -aG docker ubuntu
+cp apps/backend/.env.example apps/backend/.env
+```
+Open `apps/backend/.env` in your editor and add your **Gemini API Key**:
+```env
+GEMINI_API_KEY=your_real_key_from_google_ai_studio
 ```
 
-_Note: Log out and back in for the Docker group permissions to take effect._
-
-## 3. Deployment Preparation
-
-Clone the repository:
-
+### 3. Install Dependencies & Seed Database
+Install all monorepo packages, run database migrations, and seed demo data:
 ```bash
-git clone <YOUR_REPO_URL> agent-waf
-cd agent-waf
+pnpm install
+pnpm --filter backend prisma migrate deploy
+pnpm --filter backend db:seed
 ```
 
-Create the production environment file:
-
+### 4. Start Development Servers
+Start both the React frontend and Node.js backend simultaneously:
 ```bash
-cat << 'EOF' > .env
-# Production Environment Variables
-NODE_ENV=production
-PORT=4000
-DATABASE_URL=postgresql://postgres:postgres@postgres:5432/agent_waf?schema=public
-REDIS_URL=redis://redis:6379
-
-# Replace this with your actual Gemini API Key
-GEMINI_API_KEY=YOUR_API_KEY_HERE
-GEMINI_MODEL=gemini-2.5-flash
-
-# Generate a strong random string (e.g. openssl rand -base64 32)
-BETTER_AUTH_SECRET=YOUR_SECRET_KEY_HERE
-
-# The public Elastic IP of your EC2 instance
-BETTER_AUTH_URL=http://<ELASTIC_IP>
-CORS_ORIGIN=http://<ELASTIC_IP>
-EOF
+pnpm dev
 ```
+- Open **http://localhost:3000** in your browser.
+- Click **Quick Login (Demo Admin)** to access the dashboard.
 
-## 4. Spin Up the Stack
+---
 
-Bring up the multi-container Docker Compose stack in detached mode:
+## Option 2: Full Local Docker Deployment (Production Mode)
 
+Use this method to verify that the Dockerfiles and `docker-compose.prod.yml` work correctly before deploying to a cloud provider.
+
+### Prerequisites
+- Docker Desktop (must be running)
+
+### 1. Configure Environment Variables
+Create the root `.env` file (Docker Compose will read this):
+```bash
+cp apps/backend/.env.example .env
+```
+Ensure your `GEMINI_API_KEY` is set in the `.env` file.
+
+### 2. Build and Start the Stack
+This command will build the multi-stage Docker images for the frontend (Nginx) and backend, and start them alongside PostgreSQL and Redis.
 ```bash
 docker compose -f docker-compose.prod.yml up -d --build
 ```
 
-This will build the frontend and backend containers, and pull PostgreSQL 17 and Redis 7.
-
-## 5. Database Migration & Seeding
-
-Once the containers are running and healthy, apply the Prisma migrations to initialize the PostgreSQL database schema:
-
+### 3. Run Database Migrations
+Once the containers are up, initialize the PostgreSQL schema by running the migration command *inside* the backend container:
 ```bash
 docker compose -f docker-compose.prod.yml exec backend pnpm prisma migrate deploy
+docker compose -f docker-compose.prod.yml exec backend pnpm db:seed
 ```
 
-_(If you created a database seed script, you can run it via `docker compose -f docker-compose.prod.yml exec backend pnpm prisma db seed`)_
+### 4. Verification
+- Open **http://localhost** in your browser (Note: Port 80, not 3000!).
+- The React application is served statically by Nginx.
+- Nginx securely proxies all `/api/*` and `/socket.io/*` requests internally to the backend container.
 
-## 6. Verification
-
-1. Access the dashboard by navigating to `http://<ELASTIC_IP>` in your browser.
-2. The UI is served via Nginx on Port 80, which securely reverse-proxies `/api` and `/socket.io` to the internal backend container.
-3. Use the Demo Admin **Quick Login** button to access the dashboard and verify live Socket.IO feeds.
-
-> **Done! Your Agent WAF is now running in production.**
+### Stopping the Docker Stack
+To stop all containers and remove the isolated network:
+```bash
+docker compose -f docker-compose.prod.yml down
+```
+*(To preserve your database data across restarts, do not use the `-v` flag unless you explicitly want to wipe the volumes).*
