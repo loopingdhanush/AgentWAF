@@ -1,6 +1,5 @@
 # Agent WAF — Policy-Enforcing Proxy for AI Agent Tool Invocations
 
-[![CI Pipeline](https://github.com/aivar-innovations/agent-waf/actions/workflows/ci.yml/badge.svg)](https://github.com/aivar-innovations/agent-waf/actions/workflows/ci.yml)
 [![Node Version](https://img.shields.io/badge/node-22.x-brightgreen.svg)](https://nodejs.org)
 [![TypeScript](https://img.shields.io/badge/typescript-5.x-blue.svg)](https://www.typescriptlang.org/)
 [![Prisma](https://img.shields.io/badge/prisma-7.x-indigo.svg)](https://www.prisma.io/)
