@@ -1,0 +1,160 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+enum RuleType {
+  RATE_LIMIT
+  PARAM_BLOCKLIST
+  PARAM_SIZE_LIMIT
+  DATA_SCOPE
+  SEQUENCE
+}
+
+enum EnforcementMode {
+  BLOCK
+  SHADOW
+}
+
+enum Disposition {
+  ALLOWED
+  BLOCKED
+  SHADOW_BLOCKED
+  ERROR
+}
+
+model Agent {
+  id            String         @id @default(uuid())
+  name          String
+  apiKeyHash    String
+  apiKeyPrefix  String
+  declaredScope Json
+  createdAt     DateTime       @default(now())
+  sessions      AgentSession[]
+  logs          ToolCallLog[]
+
+  @@map("agents")
+}
+
+model AgentSession {
+  id        String        @id @default(uuid())
+  agentId   String
+  agent     Agent         @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  startedAt DateTime      @default(now())
+  logs      ToolCallLog[]
+
+  @@map("agent_sessions")
+}
+
+model Rule {
+  id              String          @id @default(uuid())
+  name            String
+  type            RuleType
+  enabled         Boolean         @default(true)
+  enforcementMode EnforcementMode @default(BLOCK)
+  targetAgentId   String?
+  targetTool      String?
+  config          Json
+  priority        Int             @default(0)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@index([enabled, priority])
+  @@map("rules")
+}
+
+model ToolCallLog {
+  id              String        @id @default(uuid())
+  timestamp       DateTime      @default(now())
+  agentId         String
+  sessionId       String
+  tool            String
+  paramsSanitized Json
+  ruleResults     Json
+  disposition     Disposition
+  latencyMs       Int
+  requestId       String
+  agent           Agent?        @relation(fields: [agentId], references: [id], onDelete: SetNull)
+  session         AgentSession? @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+
+  @@index([timestamp(sort: Desc)])
+  @@index([agentId, timestamp(sort: Desc)])
+  @@index([disposition, timestamp(sort: Desc)])
+  @@map("tool_call_logs")
+}
+
+model Customer {
+  id        String   @id
+  name      String
+  email     String
+  tier      String   @default("standard")
+  balance   Float    @default(0.0)
+  status    String   @default("active")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("customers")
+}
+
+// better-auth tables
+model User {
+  id            String    @id @default(uuid())
+  name          String
+  email         String    @unique
+  emailVerified Boolean   @default(false)
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  sessions      Session[]
+  accounts      Account[]
+
+  @@map("users")
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model Account {
+  id                    String    @id @default(uuid())
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@map("accounts")
+}
+
+model Verification {
+  id         String    @id @default(uuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime? @default(now())
+  updatedAt  DateTime? @updatedAt
+
+  @@map("verifications")
+}

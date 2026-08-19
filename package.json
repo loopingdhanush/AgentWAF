@@ -1,0 +1,29 @@
+{
+  "name": "agent-waf-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev:backend": "pnpm --filter backend dev",
+    "dev:frontend": "pnpm --filter frontend dev",
+    "build": "pnpm --recursive build",
+    "test": "pnpm --recursive test",
+    "db:up": "docker compose -f docker-compose.dev.yml up -d",
+    "db:down": "docker compose -f docker-compose.dev.yml down",
+    "prisma:migrate": "pnpm --filter backend prisma:migrate",
+    "prisma:generate": "pnpm --filter backend prisma:generate",
+    "seed": "pnpm --filter backend seed"
+  },
+  "devDependencies": {
+    "prettier": "^3.5.3",
+    "typescript": "^5.8.2"
+  },
+  "onlyBuiltDependencies": [
+    "@google/genai",
+    "@prisma/engines",
+    "bcrypt",
+    "esbuild",
+    "prisma",
+    "protobufjs"
+  ]
+}

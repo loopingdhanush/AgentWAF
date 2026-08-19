@@ -1,0 +1,54 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-[#FBFBFA] text-zinc-900 font-sans min-h-screen selection:bg-[#1a73e8] selection:text-white;
+  }
+}
+
+/* Page-title style — Google Sans-esque: medium weight, tight tracking, no serif */
+.font-editorial {
+  font-family: '"Roboto"', '"Helvetica Neue"', sans-serif;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+
+/* Clean, minimal scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #d4d4d8;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #a1a1aa;
+}
+
+/* Elevated panel — used for the top-level containers (page sections, modals) */
+.glass-panel {
+  background: #ffffff;
+  border: 1px solid #e4e4e7;
+}
+
+/* Nested / interactive card surface — used for KPI tiles, list rows, agent cards */
+.glass-card {
+  background: #ffffff;
+  border: 1px solid #e4e4e7;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.glass-card:hover {
+  border-color: #1a73e8;
+  box-shadow:
+    0 1px 2px 0 rgba(24, 24, 27, 0.04),
+    0 4px 12px -4px rgba(24, 24, 27, 0.08);
+}
