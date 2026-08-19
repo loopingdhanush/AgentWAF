@@ -1,6 +1,6 @@
 # Agent WAF — Local Deployment Guide
 
-This guide provides step-by-step instructions for running the Agent WAF monorepo on your local machine.
+This guide provides step-by-step instructions for running the Agent WAF on your local machine. It is written for beginners, so every step is explained.
 
 You have two options for local deployment:
 1. **Standard Node.js (Development Mode)**: Best for active development. Runs the backend and frontend using standard Vite/Node processes, while relying on Docker just for the database and cache.
@@ -8,12 +8,28 @@ You have two options for local deployment:
 
 ---
 
+## 0. Download the Code (Required for both options)
+
+Before you begin, you need to download the code to your machine using Git. Open your terminal (or command prompt) and run:
+
+```bash
+# Download the repository
+git clone https://github.com/loopingdhanush/AgentWAF.git
+
+# Navigate into the project folder
+cd AgentWAF
+```
+
+---
+
 ## Option 1: Standard Node.js (Development Mode)
 
 ### Prerequisites
-- Node.js 22+
-- `pnpm` (run `corepack enable && corepack prepare pnpm@latest --activate`)
-- Docker Desktop (must be running)
+Make sure you have these installed on your computer:
+- **Node.js** (version 22 or higher)
+- **Git** (to clone the code)
+- **Docker Desktop** (must be installed and running in the background)
+- **pnpm** (Once Node.js is installed, run `corepack enable && corepack prepare pnpm@latest --activate` in your terminal to install pnpm)
 
 ### 1. Start Infrastructure (PostgreSQL & Redis)
 Instead of installing databases directly on your machine, run them via Docker:
