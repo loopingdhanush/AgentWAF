@@ -257,6 +257,7 @@ _Note: All `/api/admin/*` routes require an active Better-Auth session cookie._
 
 - **`POST /api/auth/*`**: Standard [Better-Auth](https://better-auth.com) endpoints (e.g., `/sign-in`, `/sign-out`, `/session`).
 - **`GET /healthz`**: Deep health check for PostgreSQL and Redis (`200 OK` or `503 Service Unavailable`).
+- **`GET /api/version`**: Returns the gateway version, Node runtime info, and build commit metadata.
 
 ---
 
