@@ -110,11 +110,10 @@ export const HealthPage: React.FC = () => {
 
       {/* Primary Status Banner */}
       <div
-        className={`p-4 rounded-xl border flex items-center justify-between gap-4 transition-all shadow-xs ${
-          isHealthy
-            ? "bg-emerald-50/70 border-emerald-200 text-emerald-800"
-            : "bg-amber-50/70 border-amber-200 text-amber-800"
-        }`}
+        className={`p-4 rounded-xl border flex items-center justify-between gap-4 transition-all shadow-xs ${isHealthy
+          ? "bg-emerald-50/70 border-emerald-200 text-emerald-800"
+          : "bg-amber-50/70 border-amber-200 text-amber-800"
+          }`}
       >
         <div className="flex items-center gap-3">
           {isHealthy ? (
@@ -132,10 +131,6 @@ export const HealthPage: React.FC = () => {
                 ? "All Infrastructure Services Operational"
                 : "Degraded Infrastructure Status"}
             </h3>
-            <p className="text-xs opacity-85 font-mono mt-0.5">
-              PostgreSQL, Redis cache, WAF Gateway, and Gemini LLM channel are
-              active.
-            </p>
           </div>
         </div>
 
@@ -160,11 +155,10 @@ export const HealthPage: React.FC = () => {
                 <span>PostgreSQL</span>
               </div>
               <span
-                className={`px-2 py-0.5 rounded-full text-[10px] font-semibold font-mono border ${
-                  diagnostics?.postgres?.status === "healthy"
-                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                    : "bg-rose-50 text-rose-700 border-rose-200"
-                }`}
+                className={`px-2 py-0.5 rounded-full text-[10px] font-semibold font-mono border ${diagnostics?.postgres?.status === "healthy"
+                  ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                  : "bg-rose-50 text-rose-700 border-rose-200"
+                  }`}
               >
                 {diagnostics?.postgres?.status === "healthy"
                   ? "CONNECTED"
@@ -215,11 +209,10 @@ export const HealthPage: React.FC = () => {
                 <span>Redis Bus & Cache</span>
               </div>
               <span
-                className={`px-2 py-0.5 rounded-full text-[10px] font-semibold font-mono border ${
-                  diagnostics?.redis?.status === "healthy"
-                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                    : "bg-rose-50 text-rose-700 border-rose-200"
-                }`}
+                className={`px-2 py-0.5 rounded-full text-[10px] font-semibold font-mono border ${diagnostics?.redis?.status === "healthy"
+                  ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                  : "bg-rose-50 text-rose-700 border-rose-200"
+                  }`}
               >
                 {diagnostics?.redis?.status === "healthy"
                   ? "CONNECTED"
@@ -267,11 +260,10 @@ export const HealthPage: React.FC = () => {
                 <span>Gemini Agent Engine</span>
               </div>
               <span
-                className={`px-2 py-0.5 rounded-full text-[10px] font-semibold font-mono border ${
-                  diagnostics?.gemini?.keyConfigured
-                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                    : "bg-amber-50 text-amber-700 border-amber-200"
-                }`}
+                className={`px-2 py-0.5 rounded-full text-[10px] font-semibold font-mono border ${diagnostics?.gemini?.keyConfigured
+                  ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                  : "bg-amber-50 text-amber-700 border-amber-200"
+                  }`}
               >
                 {diagnostics?.gemini?.keyConfigured ? "READY" : "NO KEY"}
               </span>
@@ -389,11 +381,10 @@ export const HealthPage: React.FC = () => {
             <button
               key={ep.url}
               onClick={() => handleTestEndpoint(ep.url)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-mono font-medium transition-all border ${
-                testEndpoint === ep.url
-                  ? "bg-[#1a73e8] text-white border-[#1a73e8] shadow-xs"
-                  : "bg-zinc-50 text-zinc-700 border-zinc-200 hover:bg-zinc-100"
-              }`}
+              className={`px-3 py-1.5 rounded-lg text-xs font-mono font-medium transition-all border ${testEndpoint === ep.url
+                ? "bg-[#1a73e8] text-white border-[#1a73e8] shadow-xs"
+                : "bg-zinc-50 text-zinc-700 border-zinc-200 hover:bg-zinc-100"
+                }`}
             >
               {ep.label}
             </button>
@@ -408,11 +399,10 @@ export const HealthPage: React.FC = () => {
                 <strong className="text-emerald-400">{testEndpoint}</strong>
               </span>
               <span
-                className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                  testResult.status === 200
-                    ? "bg-emerald-950 text-emerald-400 border border-emerald-800"
-                    : "bg-rose-950 text-rose-400 border border-rose-800"
-                }`}
+                className={`px-2 py-0.5 rounded text-[10px] font-bold ${testResult.status === 200
+                  ? "bg-emerald-950 text-emerald-400 border border-emerald-800"
+                  : "bg-rose-950 text-rose-400 border border-rose-800"
+                  }`}
               >
                 STATUS {testResult.status}
               </span>

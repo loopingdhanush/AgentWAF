@@ -309,9 +309,6 @@ pnpm --filter backend test:demo
 
 ```
 c:\aivar\
-├── .github/
-│   └── workflows/
-│       └── ci.yml               # GitHub Actions CI workflow (Test + Build)
 ├── apps/
 │   ├── backend/
 │   │   ├── Dockerfile           # Multi-stage Node 22 Alpine backend build
