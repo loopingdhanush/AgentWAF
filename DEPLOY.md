@@ -87,7 +87,7 @@ docker compose -f docker-compose.prod.yml up -d --build
 Once the containers are up, initialize the PostgreSQL schema by running the migration command *inside* the backend container:
 ```bash
 docker compose -f docker-compose.prod.yml exec backend pnpm prisma migrate deploy
-docker compose -f docker-compose.prod.yml exec backend pnpm db:seed
+docker compose -f docker-compose.prod.yml exec backend pnpm seed
 ```
 
 ### 4. Verification
@@ -101,3 +101,18 @@ To stop all containers and remove the isolated network:
 docker compose -f docker-compose.prod.yml down
 ```
 *(To preserve your database data across restarts, do not use the `-v` flag unless you explicitly want to wipe the volumes).*
+
+---
+
+## Troubleshooting
+
+### 1. Database Connection Refused / Port Conflicts
+If you already have PostgreSQL running on your machine (port `5432`), Docker will fail to bind the port.
+**Fix:**
+1. Open `docker-compose.dev.yml` (or `prod.yml`) and change the mapped port (e.g., to `"5433:5432"`).
+2. Open your `.env` (and `apps/backend/.env`) and update the `DATABASE_URL` to match the new port:
+   `DATABASE_URL=postgresql://postgres:postgres@localhost:5433/agent_waf?schema=public`
+
+### 2. Frontend Build Fails (Cannot find module)
+If the Docker build for the frontend crashes with a missing module error (like `typescript`), it usually means your host's local `node_modules` are conflicting.
+**Fix:** Ensure the `.dockerignore` file exists in the root directory and contains `**/node_modules`.
