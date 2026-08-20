@@ -263,8 +263,6 @@ _Note: All `/api/admin/*` routes require an active Better-Auth session cookie._
 
 ## 9. Local Development & Verification
 
-### Option A: Standard Node.js (Development Mode)
-
 **Prerequisites:** Node.js 22+, `pnpm` enabled, Docker Desktop (for Postgres/Redis).
 
 1. **Install Dependencies:**
@@ -294,23 +292,6 @@ _Note: All `/api/admin/*` routes require an active Better-Auth session cookie._
 
 4. **Access the Application:**
    Open `http://localhost:3000` and click **Quick Login (Demo Admin)**.
-
-### Option B: Full Local Docker Deployment (Production Build)
-
-If you want to run the exact production stack on your local machine (Frontend via Nginx, Backend, Postgres, Redis):
-
-**Prerequisites:** Docker Desktop.
-
-1. Create your `apps/backend/.env` file.
-2. Build and start the entire stack:
-   ```bash
-   docker compose -f docker-compose.prod.yml up -d --build
-   ```
-3. Run the database migrations inside the running container:
-   ```bash
-   docker compose -f docker-compose.prod.yml exec backend pnpm prisma migrate deploy
-   ```
-4. Open `http://localhost` (Note: Port 80, not 3000) in your browser.
 
 ### Automated Test Suites
 

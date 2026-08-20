@@ -1,14 +1,10 @@
 # Agent WAF — Local Deployment Guide
 
-This guide provides step-by-step instructions for running the Agent WAF on your local machine. It is written for beginners, so every step is explained.
-
-You have two options for local deployment:
-1. **Standard Node.js (Development Mode)**: Best for active development. Runs the backend and frontend using standard Vite/Node processes, while relying on Docker just for the database and cache.
-2. **Full Docker Deployment (Production Mode)**: Best for testing the exact production infrastructure. Runs the entire stack (including the frontend Nginx proxy and Node backend) inside Docker.
+This guide provides step-by-step instructions for running the Agent WAF on your local machine for active development. It relies on standard Node.js processes for the backend and frontend, and uses Docker just for the PostgreSQL database and Redis cache.
 
 ---
 
-## 0. Download the Code (Required for both options)
+## 0. Download the Code
 
 Before you begin, you need to download the code to your machine using Git. Open your terminal (or command prompt) and run:
 
@@ -22,7 +18,7 @@ cd AgentWAF
 
 ---
 
-## Option 1: Standard Node.js (Development Mode)
+## 1. Local Development Setup
 
 ### Prerequisites
 Make sure you have these installed on your computer:
@@ -31,21 +27,21 @@ Make sure you have these installed on your computer:
 - **Docker Desktop** (must be installed and running in the background)
 - **pnpm** (Once Node.js is installed, run `corepack enable && corepack prepare pnpm@latest --activate` in your terminal to install pnpm)
 
-### 1. Automated Setup Script
-Instead of running databases and migrations manually, you can use our built-in setup script.
-
-First, install `pnpm` dependencies:
+### Step 1: Install Dependencies
+Install all required packages via `pnpm`:
 ```bash
 pnpm install
 ```
 
-Then, run the automated setup script. This script will automatically start PostgreSQL and Redis via Docker, wait for them to initialize, run database migrations, and seed the demo data:
+### Step 2: Run the Setup Script
+We've included an automated setup script that will start PostgreSQL and Redis via Docker, wait for them to initialize, run database migrations, and seed the demo data automatically.
+
 ```bash
 pnpm run setup:dev
 ```
 *(If prompted, add your **Gemini API Key** to `apps/backend/.env` and re-run the setup script)*
 
-### 2. Start Development Servers
+### Step 3: Start Development Servers
 Once setup is complete, start both the React frontend and Node.js backend simultaneously in two different terminal windows:
 
 **Terminal 1 (Backend):**
@@ -63,56 +59,15 @@ pnpm dev:frontend
 
 ---
 
-## Option 2: Full Local Docker Deployment (Production Mode)
-
-Use this method to verify that the Dockerfiles and `docker-compose.prod.yml` work correctly before deploying to a cloud provider.
-
-### Prerequisites
-- Docker Desktop (must be running)
-
-### 1. Configure Environment Variables
-Create the root `.env` file (Docker Compose will read this):
-```bash
-cp apps/backend/.env.example .env
-```
-Ensure your `GEMINI_API_KEY` is set in the `.env` file.
-
-### 2. Build and Start the Stack
-This command will build the multi-stage Docker images for the frontend (Nginx) and backend, and start them alongside PostgreSQL and Redis.
-```bash
-docker compose -f docker-compose.prod.yml up -d --build
-```
-
-### 3. Run Database Migrations
-Once the containers are up, initialize the PostgreSQL schema by running the migration command *inside* the backend container:
-```bash
-docker compose -f docker-compose.prod.yml exec backend pnpm prisma migrate deploy
-docker compose -f docker-compose.prod.yml exec backend pnpm seed
-```
-
-### 4. Verification
-- Open **http://localhost** in your browser (Note: Port 80, not 3000!).
-- The React application is served statically by Nginx.
-- Nginx securely proxies all `/api/*` and `/socket.io/*` requests internally to the backend container.
-
-### Stopping the Docker Stack
-To stop all containers and remove the isolated network:
-```bash
-docker compose -f docker-compose.prod.yml down
-```
-*(To preserve your database data across restarts, do not use the `-v` flag unless you explicitly want to wipe the volumes).*
-
----
-
 ## Troubleshooting
 
 ### 1. Database Connection Refused / Port Conflicts
 If you already have PostgreSQL running on your machine (port `5432`), Docker will fail to bind the port.
 **Fix:**
-1. Open `docker-compose.dev.yml` (or `prod.yml`) and change the mapped port (e.g., to `"5433:5432"`).
+1. Open `docker-compose.dev.yml` and change the mapped port (e.g., to `"5433:5432"`).
 2. Open your `.env` (and `apps/backend/.env`) and update the `DATABASE_URL` to match the new port:
    `DATABASE_URL=postgresql://postgres:postgres@localhost:5433/agent_waf?schema=public`
 
 ### 2. Frontend Build Fails (Cannot find module)
-If the Docker build for the frontend crashes with a missing module error (like `typescript`), it usually means your host's local `node_modules` are conflicting.
+If Docker build commands crash with a missing module error (like `typescript`), it usually means your host's local `node_modules` are conflicting.
 **Fix:** Ensure the `.dockerignore` file exists in the root directory and contains `**/node_modules`.
