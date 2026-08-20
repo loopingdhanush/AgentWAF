@@ -3,7 +3,6 @@
 [![Node Version](https://img.shields.io/badge/node-22.x-brightgreen.svg)](https://nodejs.org)
 [![TypeScript](https://img.shields.io/badge/typescript-5.x-blue.svg)](https://www.typescriptlang.org/)
 [![Prisma](https://img.shields.io/badge/prisma-7.x-indigo.svg)](https://www.prisma.io/)
-[![Docker](https://img.shields.io/badge/docker-ready-blue.svg)](https://www.docker.com/)
 
 > **Agent WAF** is a high-performance, enterprise-grade security gateway and policy enforcement firewall that sits between autonomous AI agents and execution environments. It inspects, validates, filters, sanitizes, and logs every tool invocation in real time before execution.
 
