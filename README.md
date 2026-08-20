@@ -230,34 +230,34 @@ The core proxy endpoint where AI agents send their tool execution requests.
 
 ### 2. Autonomous Agent Runner
 
-- **`POST /api/v1/agent-run`**: Triggers a live, server-side Gemini agent to execute a goal autonomously (used by the Sandbox UI).
+- **`POST /api/v1/agent-run`**: Triggers a live, server-side Gemini agent to execute a goal autonomously. The backend uses the official `@google/genai` SDK to spawn an agent that iteratively calls tools via the gateway until the goal is achieved. This is primarily used by the Sandbox UI for demonstration purposes.
 
 ### 3. Admin & Configuration API
 
 _Note: All `/api/admin/*` routes require an active Better-Auth session cookie._
 
 **Agents Management**
-- **`GET /api/admin/agents`**: List all registered agents and their API keys.
-- **`POST /api/admin/agents`**: Register a new agent (generates a new `x-agent-key`).
-- **`PATCH /api/admin/agents/:id`**: Update an agent's metadata or data scope.
-- **`DELETE /api/admin/agents/:id`**: Revoke and delete an agent.
+- **`GET /api/admin/agents`**: Returns a list of all registered AI agents, including their configured data scopes and tool access permissions.
+- **`POST /api/admin/agents`**: Registers a new AI agent and generates a unique `x-agent-key` that the agent must use to authenticate its tool calls.
+- **`PATCH /api/admin/agents/:id`**: Updates an existing agent's configuration, such as changing its allowed customer ID patterns or modifying which tools it is authorized to invoke.
+- **`DELETE /api/admin/agents/:id`**: Instantly revokes an agent's access and deletes it from the system. Any active sessions using this agent's key will immediately fail.
 
 **Firewall Rules Management**
-- **`GET /api/admin/rules`**: List all active WAF policies and sequence chains.
-- **`POST /api/admin/rules`**: Create a new policy evaluator (Rate Limit, Scope, Blocklist, etc).
-- **`PATCH /api/admin/rules/:id`**: Update a rule's configuration or toggle it into `SHADOW` mode.
-- **`DELETE /api/admin/rules/:id`**: Remove a policy rule.
+- **`GET /api/admin/rules`**: Returns the complete set of active WAF policies (Rate Limits, Data Scopes, Sequences, Blocklists) that are currently enforcing tool execution behavior.
+- **`POST /api/admin/rules`**: Creates and deploys a new policy evaluator to the WAF engine in real-time.
+- **`PATCH /api/admin/rules/:id`**: Updates a rule's configuration parameters or toggles its `mode` (e.g., switching a rule from `BLOCK` to `SHADOW` mode to observe its effects without actually failing requests).
+- **`DELETE /api/admin/rules/:id`**: Removes a policy rule from the evaluation chain.
 
 **Telemetry & Logging**
-- **`GET /api/admin/logs`**: Paginated retrieval of the `ToolCallLog` audit trail.
-- **`GET /api/admin/stats/summary`**: High-level KPI metrics (Total calls, Block rate) for the Dashboard.
-- **`GET /api/admin/diagnostics`**: Deep diagnostic data on rule execution times and system health.
+- **`GET /api/admin/logs`**: Retrieves a paginated, chronological audit trail of all `ToolCallLog` events, detailing the exact agent, tool, parameters, and WAF disposition (ALLOWED/BLOCKED) for every execution.
+- **`GET /api/admin/stats/summary`**: Aggregates high-level KPI metrics for the Dashboard, such as the total number of tool calls processed, the overall block rate, and the most active agents.
+- **`GET /api/admin/diagnostics`**: Fetches deep diagnostic telemetry, including individual rule evaluation latencies, Redis pub/sub health, and database connection statuses.
 
 ### 4. System Endpoints
 
-- **`POST /api/auth/*`**: Standard [Better-Auth](https://better-auth.com) endpoints (e.g., `/sign-in`, `/sign-out`, `/session`).
-- **`GET /healthz`**: Deep health check for PostgreSQL and Redis (`200 OK` or `503 Service Unavailable`).
-- **`GET /api/version`**: Returns the gateway version, Node runtime info, and build commit metadata.
+- **`POST /api/auth/*`**: Standard [Better-Auth](https://better-auth.com) endpoints (e.g., `/sign-in`, `/sign-out`, `/session`) used to manage administrator authentication and session cookies for the dashboard.
+- **`GET /healthz`**: A deep health check endpoint that tests connectivity to the PostgreSQL database and Redis cache. Returns `200 OK` if the infrastructure is fully operational, or `503 Service Unavailable` if a component is degraded.
+- **`GET /api/version`**: Returns the gateway's current version, Node.js runtime information, and the build commit metadata (Git SHA). Useful for verifying deployments.
 
 ---
 
