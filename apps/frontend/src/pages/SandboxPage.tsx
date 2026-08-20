@@ -1,18 +1,22 @@
 import React, { useState, useEffect } from "react";
 import {
   Play,
+  Sparkles,
+  AlertCircle,
+  Terminal,
+  Bot,
+  ShieldAlert,
+  Code2,
   CheckCircle2,
+  Search,
+  Flame,
   XCircle,
   Eye,
   AlertTriangle,
-  Flame,
-  Code2,
-  Terminal,
-  Sparkles,
-  Bot,
   Activity,
   ChevronRight,
 } from "lucide-react";
+import ReactMarkdown from "react-markdown";
 import { api } from "../lib/api.js";
 import { getDashboardSocket, ToolCallEvent } from "../lib/socket.js";
 
@@ -286,9 +290,9 @@ export const SandboxPage: React.FC = () => {
                           <Bot className="h-4 w-4 text-zinc-500" />
                           <span>AI Model Response & Synthesis:</span>
                         </div>
-                        <p className="font-sans text-xs text-zinc-700 leading-relaxed pl-6 whitespace-pre-wrap">
-                          {agentRunResult.finalAnswer}
-                        </p>
+                        <div className="prose prose-sm prose-zinc max-w-none font-sans text-xs text-zinc-700 leading-relaxed pl-6">
+                          <ReactMarkdown>{agentRunResult.finalAnswer}</ReactMarkdown>
+                        </div>
                       </div>
                     )}
                   </div>
